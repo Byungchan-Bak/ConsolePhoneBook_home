@@ -23,7 +23,7 @@ namespace ConsolePhoneBook
             else
                 return 0;
         }
-    }   //이름 오름차순 정렬 함수
+    }   //이름 오름차순 정렬
 
     public class NumberRange : IComparer
     {
@@ -40,7 +40,7 @@ namespace ConsolePhoneBook
             else
                 return 0;
         }
-    }   //번호 오름차순 정렬 함수
+    }   //번호 오름차순 정렬
 
     public class PhoneInfo //클래스 앞 public
     {
@@ -49,8 +49,8 @@ namespace ConsolePhoneBook
         string birth;   //생일(선택)
 
         public string RangeName { get { return name; } }    
-        public string SearchNumber { get { return phoneNumber; } }  
-        
+        public string SearchNumber { get { return phoneNumber; } }
+
         public PhoneInfo() { }
 
         public PhoneInfo(string name, string num)

@@ -11,6 +11,20 @@ namespace ConsolePhoneBook
 {
     public class PhoneBookManager
     {
+        #region 싱글톤
+        static PhoneBookManager instance;
+
+        private PhoneBookManager() { }
+        
+        public static PhoneBookManager SingleTon()
+        {
+            if (instance == null)
+                instance = new PhoneBookManager();
+
+            return instance;
+        }
+        #endregion
+
         const int MAX_CNT = 100;
         PhoneInfo[] infoStorage = new PhoneInfo[MAX_CNT];   //전화번호 부 최대 100개
         int curCnt = 0; //현재 저장된 전화번호 수
@@ -26,55 +40,56 @@ namespace ConsolePhoneBook
 
         public void InputData()
         {
-            try
-            {
-                SaveData(InputMenu(), InputName(), InputNumber());
-                this.curCnt++;
-            }catch(Exception err)
-            {
-                Console.WriteLine(err.Message);
-            }
+            SaveData(InputMenu(), InputName(), InputNumber());
+            this.curCnt++;
         }   //전화번호부 등록 메서드
 
         public void ListData()
         {
+            int select;
+            error[2] = true;
+
             Console.WriteLine("1. 기본  |  2. 오름차순(이름)  |  3. 오름차순(번호)");
-            Console.Write("선택 -->> ");
-            int.TryParse(Console.ReadLine(), out int select);
-            switch(select)
+            while (error[2])
             {
-                case 1:
-                    for (int i = 0; i < curCnt; i++)
+                Console.Write("선택 -->> ");
+                try
+                {
+                    select = int.Parse(Console.ReadLine());
+                    switch (select)
                     {
-                        infoStorage[i].ShowInfo();
+                        case 1:
+                            for (int i = 0; i < curCnt; i++) { infoStorage[i].ShowInfo(); }
+                            error[2] = false;
+                            break;
+                        case 2:
+                            UpChartName();
+                            error[2] = false;
+                            break;
+                        case 3:
+                            UpChartNumber();
+                            error[2] = false;
+                            break;
+                        default:
+                            error[2] = true;
+                            ErrorList();
+                            break;
                     }
-                    break;
-                case 2:
-                    UpChartName();
-                    break;
-                case 3:
-                    UpChartNumber();
-                    break;
-                default:
-                    Console.WriteLine("잘못선택했습니다.");
-                    break;
+                }catch(Exception err)
+                {
+                    Console.WriteLine(err.Message);
+                }
             }
         }   //전화번호부 보기 메서드
 
         public void SearchData()
         {
-            
             Console.Write("찾을 번호 : ");
             string search_number = Console.ReadLine();
             int check_code = SearchNumber(search_number);
-            if(check_code < 0)  //중복이 없을 경우
-            {
-                Console.WriteLine("해당되는 데이터가 없습니다.");
-            }
-            else
-            {
-                infoStorage[check_code].ShowInfo();
-            }
+            //중복이 없을 경우
+            if (check_code < 0) { Console.WriteLine("해당되는 데이터가 없습니다."); }
+            else{ infoStorage[check_code].ShowInfo(); }
         }   //전화번호 찾기 메서드
 
         public void DeleteData()
@@ -86,18 +101,12 @@ namespace ConsolePhoneBook
             while (this.error[0])
             {
                 Console.Write("번호 : ");
-                delete_number = Console.ReadLine().Trim().Replace(" ", "");
-                //if(name == " " / if (name.Length < 1 / name.Equals(""))   //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
                 try
                 {
-                    if (string.IsNullOrEmpty(delete_number))    //null또는 공백만 입력했을 경우
-                    {
-                        ErrorList();
-                    }
-                    else
-                    {
-                        this.error[0] = false;
-                    }
+                    delete_number = Console.ReadLine().Trim().Replace(" ", ""); //if(name == " " / if (name.Length < 1 / name.Equals(""))   //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
+                    //null또는 공백만 입력했을 경우
+                    if (string.IsNullOrEmpty(delete_number))    { ErrorList(); }
+                    else{ this.error[0] = false; }
                 }
                 catch (Exception err)
                 {
@@ -112,7 +121,7 @@ namespace ConsolePhoneBook
             }
             else
             {
-                for (int i = 0; i < curCnt; i++)
+                for (int i = checkcode; i < curCnt; i++)
                 {
                     infoStorage[i] = infoStorage[i + 1];    //데이터 삭제
                 }
@@ -129,11 +138,10 @@ namespace ConsolePhoneBook
             Console.WriteLine("1. 일반  |  2. 대학  |  3.회사");
             while (this.error[2])
             {
+                Console.Write("선택 -->> ");
                 try
                 {
-                    Console.Write("선택 -->> ");
-                input_select = int.Parse(Console.ReadLine());
-                
+                    input_select = int.Parse(Console.ReadLine());
                     switch (input_select)
                     {
                         case 1:
@@ -162,28 +170,17 @@ namespace ConsolePhoneBook
             while (this.error[0] || this.error[1])
             {
                 Console.Write("번호 : ");
-                input_number = Console.ReadLine().Trim();
-            //if(name == " " / if (name.Length < 1 / name.Equals(""))   //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
                 try
                 {
-                    if (string.IsNullOrEmpty(input_number)) //null또는 공백만 입력했을 경우
-                    {
-                        ErrorList();
-                    }
-                    else
-                    {
-                        this.error[0] = false;
-                    }
+                    input_number = Console.ReadLine().Trim(); //if(name == " " / if (name.Length < 1 / name.Equals(""))   //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
+                    //null또는 공백만 입력했을 경우
+                    if (string.IsNullOrEmpty(input_number)) { ErrorList(); }
+                    else{ this.error[0] = false; }
 
                     int checkcode = SearchNumber(input_number);
-                    if (checkcode > -1)  //중복일 경우
-                    {
-                        ErrorList();
-                    }
-                    else
-                    {
-                        this.error[1] = false;
-                    }
+                    //중복일 경우
+                    if (checkcode > -1) { ErrorList(); }
+                    else{ this.error[1] = false; }
                 }
                 catch (Exception err)
                 {
@@ -201,20 +198,15 @@ namespace ConsolePhoneBook
             while (this.error[0])
             {
                 Console.Write("이름 : ");
-                input_name = Console.ReadLine().Trim();
-                //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
-                //Replace -->> 문자열 변경 : " ", ""
-                //if(name == " " / if (name.Length < 1 / name.Equals(""))
                 try
                 {
-                    if (string.IsNullOrEmpty(input_name))   //null또는 공백만 입력했을 경우
-                    {
-                        ErrorList();                    
-                    }
-                    else
-                    {
-                        this.error[0] = false;
-                    }
+                    //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
+                    //Replace -->> 문자열 변경 : " ", ""
+                    //if(name == " " / if (name.Length < 1 / name.Equals(""))
+                    input_name = Console.ReadLine().Trim();
+                    //null또는 공백만 입력했을 경우
+                    if (string.IsNullOrEmpty(input_name)){ ErrorList(); }
+                    else{ this.error[0] = false; }
                 }
                 catch (Exception err)
                 {
@@ -269,7 +261,6 @@ namespace ConsolePhoneBook
                     return i;
                 }
             }
-
             return -1;
         }
 

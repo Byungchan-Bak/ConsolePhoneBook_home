@@ -1,13 +1,23 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ConsolePhoneBook
 {
-    
+    interface IPhoneInfo
+    {
+        void Log();
+    }
+
+    abstract class PhonbookInfo
+    {
+        public abstract void Log();
+    }
+
     public class NameRange : IComparer
     {
         public int Compare(object x, object y)
@@ -66,9 +76,12 @@ namespace ConsolePhoneBook
             this.birth = birth;
         }
 
-        public virtual void ShowInfo()
+        public virtual string ShowInfo()
         {
-            Console.Write($"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}");
+            string log = $"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}";
+            Console.Write(log);
+
+            return log;
         }
     }
 
@@ -84,12 +97,15 @@ namespace ConsolePhoneBook
             this.year = year;
         }
         
-        public override void ShowInfo()
+        public override string ShowInfo()
         {
+            string univLog = ShowInfo() + $" | 대학/학년 : {this.major}/{this.year}";
             base.ShowInfo();
             Console.Write($" | 대학/학년 : {this.major}/{this.year}");
+
+            return univLog;
         }
-    }
+    }   //추가사항(대학/학년) 입력 메서드
         
     public class PhoneCompanyInfo : PhoneInfo
     {
@@ -101,10 +117,28 @@ namespace ConsolePhoneBook
             this.company = company;
         }
     
-        public override void ShowInfo()
+        public override string ShowInfo()
         {
+            string companyLog = ShowInfo() + $" | 회사 : {this.company}";
+
             base.ShowInfo();
             Console.Write($" | 회사 : {this.company}");
+
+            return companyLog;
         }
-    }
+    }   //추가사항(회사) 입력 메서드
+
+    public class SaveLog : PhoneInfo, IPhoneInfo
+    {
+        public void Log()
+        {
+            File.AppendAllText("BookList.txt", ShowInfo());
+            //File.Copy("BookList.txt", "BookList.txt", true);
+        }
+
+        public override string ShowInfo()
+        {
+            return base.ShowInfo();
+        }
+    }   //전화번호부 파일 저장 메서드
 }

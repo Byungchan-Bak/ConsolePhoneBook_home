@@ -250,6 +250,8 @@ namespace ConsolePhoneBook
                     infoStorage[curCnt] = addcom;
                     break;
             }   //데이터 저장
+            //SaveLog log = new SaveLog();
+            //log.Log();
         }   //데이터 저장 메서드
 
         private int SearchNumber(string search_number)  //파라미터 1 전화번호 찾기

@@ -1,21 +1,25 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ConsolePhoneBook
 {
+    [Serializable]
     public class PhoneBookManager
     {
         #region 싱글톤
         static PhoneBookManager instance;
 
         private PhoneBookManager() { }
-        
+
         public static PhoneBookManager SingleTon()
         {
             if (instance == null)
@@ -27,7 +31,7 @@ namespace ConsolePhoneBook
 
         const int MAX_CNT = 100;
         PhoneInfo[] infoStorage = new PhoneInfo[MAX_CNT];   //전화번호 부 최대 100개
-        int curCnt = 0; //현재 저장된 전화번호 수
+        int curCnt; //현재 저장된 전화번호 수
         public bool[] error = new bool[3]; //오류 번호
 
         public void ShowMenu()
@@ -41,7 +45,7 @@ namespace ConsolePhoneBook
         public void InputData()
         {
             SaveData(InputMenu(), InputName(), InputNumber());
-            this.curCnt++;
+            curCnt++;
         }   //전화번호부 등록 메서드
 
         public void ListData()
@@ -56,10 +60,11 @@ namespace ConsolePhoneBook
                 try
                 {
                     select = int.Parse(Console.ReadLine());
+
                     switch (select)
                     {
                         case 1:
-                            for (int i = 0; i < curCnt; i++) { infoStorage[i].ShowInfo(); }
+                            baseList();
                             error[2] = false;
                             break;
                         case 2:
@@ -71,11 +76,11 @@ namespace ConsolePhoneBook
                             error[2] = false;
                             break;
                         default:
-                            error[2] = true;
                             ErrorList();
                             break;
                     }
-                }catch(Exception err)
+                }
+                catch (Exception err)
                 {
                     Console.WriteLine(err.Message);
                 }
@@ -89,7 +94,7 @@ namespace ConsolePhoneBook
             int check_code = SearchNumber(search_number);
             //중복이 없을 경우
             if (check_code < 0) { Console.WriteLine("해당되는 데이터가 없습니다."); }
-            else{ infoStorage[check_code].ShowInfo(); }
+            else { infoStorage[check_code].ToString(); }
         }   //전화번호 찾기 메서드
 
         public void DeleteData()
@@ -105,8 +110,8 @@ namespace ConsolePhoneBook
                 {
                     delete_number = Console.ReadLine().Trim().Replace(" ", ""); //if(name == " " / if (name.Length < 1 / name.Equals(""))   //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
                     //null또는 공백만 입력했을 경우
-                    if (string.IsNullOrEmpty(delete_number))    { ErrorList(); }
-                    else{ this.error[0] = false; }
+                    if (string.IsNullOrEmpty(delete_number)) { ErrorList(); }
+                    else { this.error[0] = false; }
                 }
                 catch (Exception err)
                 {
@@ -175,12 +180,12 @@ namespace ConsolePhoneBook
                     input_number = Console.ReadLine().Trim(); //if(name == " " / if (name.Length < 1 / name.Equals(""))   //Trim() -->> 문자열 공백제거 : 문자열 사이의 공백제거(x)
                     //null또는 공백만 입력했을 경우
                     if (string.IsNullOrEmpty(input_number)) { ErrorList(); }
-                    else{ this.error[0] = false; }
+                    else { this.error[0] = false; }
 
                     int checkcode = SearchNumber(input_number);
                     //중복일 경우
                     if (checkcode > -1) { ErrorList(); }
-                    else{ this.error[1] = false; }
+                    else { this.error[1] = false; }
                 }
                 catch (Exception err)
                 {
@@ -205,8 +210,8 @@ namespace ConsolePhoneBook
                     //if(name == " " / if (name.Length < 1 / name.Equals(""))
                     input_name = Console.ReadLine().Trim();
                     //null또는 공백만 입력했을 경우
-                    if (string.IsNullOrEmpty(input_name)){ ErrorList(); }
-                    else{ this.error[0] = false; }
+                    if (string.IsNullOrEmpty(input_name)) { ErrorList(); }
+                    else { this.error[0] = false; }
                 }
                 catch (Exception err)
                 {
@@ -250,8 +255,6 @@ namespace ConsolePhoneBook
                     infoStorage[curCnt] = addcom;
                     break;
             }   //데이터 저장
-            //SaveLog log = new SaveLog();
-            //log.Log();
         }   //데이터 저장 메서드
 
         private int SearchNumber(string search_number)  //파라미터 1 전화번호 찾기
@@ -266,6 +269,14 @@ namespace ConsolePhoneBook
             return -1;
         }
 
+        private void baseList()
+        {
+            PhoneInfo[] copyinfo = new PhoneInfo[curCnt];
+            Array.Copy(infoStorage, copyinfo, curCnt);
+            for (int i = 0; i < curCnt; i++)
+            { Console.WriteLine(copyinfo[i].ToString()); }
+        }
+
         private void UpChartName()
         {
             PhoneInfo[] copyinfo = new PhoneInfo[this.curCnt];
@@ -274,7 +285,7 @@ namespace ConsolePhoneBook
             Array.Sort(copyinfo, range);
             for (int i = 0; i < curCnt; i++)
             {
-                copyinfo[i].ShowInfo();
+                Console.WriteLine(copyinfo[i].ToString());
             }
         }   //이름 오름차순정렬
 
@@ -286,15 +297,39 @@ namespace ConsolePhoneBook
             Array.Sort(copyinfo, range);
             for (int i = 0; i < curCnt; i++)
             {
-                copyinfo[i].ShowInfo();
+                Console.WriteLine(copyinfo[i].ToString());
             }
         }   //번호 오름차순정렬
 
         public void ErrorList()
         {
-            if(this.error[0] == true){ throw new Exception("필수 입력사항입니다.!!");   }
-            if(this.error[1] == true){ throw new Exception("이미 저장된 번호입니다.!!"); }
+            if (this.error[0] == true) { throw new Exception("필수 입력사항입니다.!!"); }
+            if (this.error[1] == true) { throw new Exception("이미 저장된 번호입니다.!!"); }
             if (this.error[2] == true) { throw new Exception("잘못 입력되었습니다. 다시 입력하시오.!!"); }
         }   //입력오류 리스트
+
+        public void SaveText()
+        {
+            FileStream pbFile = new FileStream("PhoneBookList.dat", FileMode.Create);   //파일 생성
+            BinaryFormatter listType = new BinaryFormatter();   //파일 타입 -->> 바이너리 타입
+            PhoneInfo[] temp = new PhoneInfo[curCnt];
+            Array.Copy(infoStorage, temp, curCnt);
+            listType.Serialize(pbFile, temp);
+            pbFile.Close();
+        }
+
+        public void PrintText()
+        {
+            if (File.Exists("PhoneBookList.dat"))   //파일이 있을 경우 실행
+            {
+                FileStream pbFile = new FileStream("PhoneBookList.dat", FileMode.Open); //오픈할 파일
+                BinaryFormatter listType = new BinaryFormatter();   //파일 타입
+                PhoneInfo[] temp = (PhoneInfo[])listType.Deserialize(pbFile); //파일 내용을 배열로 형변환
+                curCnt = temp.Length;   //저장된 데이터의 수
+                Array.Copy(temp, infoStorage, curCnt);  //배열(데이터) 복사
+                pbFile.Close();
+            }
+            
+        }
     }
 }

@@ -3,20 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ConsolePhoneBook
 {
-    interface IPhoneInfo
-    {
-        void Log();
-    }
-
-    abstract class PhonbookInfo
-    {
-        public abstract void Log();
-    }
 
     public class NameRange : IComparer
     {
@@ -52,13 +46,14 @@ namespace ConsolePhoneBook
         }
     }   //번호 오름차순 정렬
 
+    [Serializable]
     public class PhoneInfo //클래스 앞 public
     {
         string name;    //이름(필수)
         string phoneNumber; //전화번호(필수)
         string birth;   //생일(선택)
 
-        public string RangeName { get { return name; } }    
+        public string RangeName { get { return name; } }
         public string SearchNumber { get { return phoneNumber; } }
 
         public PhoneInfo() { }
@@ -76,15 +71,30 @@ namespace ConsolePhoneBook
             this.birth = birth;
         }
 
-        public virtual string ShowInfo()
+        /*
+        public virtual void ShowInfo()
         {
-            string log = $"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}";
-            Console.Write(log);
+            Console.Write($"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}");
+        }
+        */
+        public override string ToString()
+        {
+            return $"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}";
+        }
 
-            return log;
+        public override bool Equals(object obj)
+        {
+            return obj is PhoneInfo info &&
+                   phoneNumber == info.phoneNumber;
+        }
+
+        public override int GetHashCode()
+        {
+            return 2015090622 + EqualityComparer<string>.Default.GetHashCode(phoneNumber);
         }
     }
 
+    [Serializable]
     public class PhoneUnivInfo : PhoneInfo
     {
         string major;
@@ -96,49 +106,43 @@ namespace ConsolePhoneBook
             this.major = major;
             this.year = year;
         }
-        
-        public override string ShowInfo()
+
+        /*
+        public override void ShowInfo()
         {
-            string univLog = ShowInfo() + $" | 대학/학년 : {this.major}/{this.year}";
             base.ShowInfo();
             Console.Write($" | 대학/학년 : {this.major}/{this.year}");
-
-            return univLog;
         }
-    }   //추가사항(대학/학년) 입력 메서드
-        
+        */
+        public override string ToString()
+        {
+            return base.ToString().Replace("생일 : ", "") + $"대학/학년 : {this.major}/{this.year}";
+        }
+
+
+    }
+
+    [Serializable]
     public class PhoneCompanyInfo : PhoneInfo
     {
         string company;
-    
+
         public PhoneCompanyInfo(string name, string phonenumber, string birth, string company)
             : base(name, phonenumber, birth)
         {
             this.company = company;
         }
-    
-        public override string ShowInfo()
-        {
-            string companyLog = ShowInfo() + $" | 회사 : {this.company}";
 
+        /*
+        public override void ShowInfo()
+        {
             base.ShowInfo();
             Console.Write($" | 회사 : {this.company}");
-
-            return companyLog;
         }
-    }   //추가사항(회사) 입력 메서드
-
-    public class SaveLog : PhoneInfo, IPhoneInfo
-    {
-        public void Log()
+        */
+        public override string ToString()
         {
-            File.AppendAllText("BookList.txt", ShowInfo());
-            //File.Copy("BookList.txt", "BookList.txt", true);
+            return base.ToString().Replace("생일 : ", "") + $"회사 : {this.company}";
         }
-
-        public override string ShowInfo()
-        {
-            return base.ShowInfo();
-        }
-    }   //전화번호부 파일 저장 메서드
+    }
 }

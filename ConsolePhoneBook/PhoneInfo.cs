@@ -11,52 +11,21 @@ using System.Threading.Tasks;
 
 namespace ConsolePhoneBook
 {
-
-    public class NameRange : IComparer
-    {
-        public int Compare(object x, object y)
-        {
-            // 이름이 크면 1, 이름이 작으면 -1, 이름이 같으면 0
-            PhoneInfo first = x as PhoneInfo;
-            PhoneInfo second = y as PhoneInfo;
-
-            if (first.RangeName.CompareTo(second.RangeName) == 1)
-                return 1;
-            else if (first.RangeName.CompareTo(second.RangeName) == -1)
-                return -1;
-            else
-                return 0;
-        }
-    }   //이름 오름차순 정렬
-
-    public class NumberRange : IComparer
-    {
-        public int Compare(object x, object y)
-        {
-            // 번호가 크면 1, 작으면 -1
-            PhoneInfo first = x as PhoneInfo;
-            PhoneInfo second = y as PhoneInfo;
-
-            if (first.SearchNumber.CompareTo(second.SearchNumber) == 1)
-                return 1;
-            else if (first.SearchNumber.CompareTo(second.SearchNumber) == -1)
-                return -1;
-            else
-                return 0;
-        }
-    }   //번호 오름차순 정렬
-
     [Serializable]
     public class PhoneInfo //클래스 앞 public
     {
         string name;    //이름(필수)
         string phoneNumber; //전화번호(필수)
         string birth;   //생일(선택)
+        public string checkName, checkNum;
 
         public string RangeName { get { return name; } }
-        public string SearchNumber { get { return phoneNumber; } }
+        public string RangeNumber { get { return phoneNumber; } }
 
         public PhoneInfo() { }
+
+        public PhoneInfo(string num)
+        { checkNum = num; }
 
         public PhoneInfo(string name, string num)
         {
@@ -71,26 +40,9 @@ namespace ConsolePhoneBook
             this.birth = birth;
         }
 
-        /*
-        public virtual void ShowInfo()
-        {
-            Console.Write($"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}");
-        }
-        */
         public override string ToString()
         {
             return $"\n이름 : {this.name} | 번호 : {this.phoneNumber} | 생일 : {this.birth}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is PhoneInfo info &&
-                   phoneNumber == info.phoneNumber;
-        }
-
-        public override int GetHashCode()
-        {
-            return 2015090622 + EqualityComparer<string>.Default.GetHashCode(phoneNumber);
         }
     }
 
@@ -107,13 +59,6 @@ namespace ConsolePhoneBook
             this.year = year;
         }
 
-        /*
-        public override void ShowInfo()
-        {
-            base.ShowInfo();
-            Console.Write($" | 대학/학년 : {this.major}/{this.year}");
-        }
-        */
         public override string ToString()
         {
             return base.ToString().Replace("생일 : ", "") + $"대학/학년 : {this.major}/{this.year}";
@@ -133,13 +78,6 @@ namespace ConsolePhoneBook
             this.company = company;
         }
 
-        /*
-        public override void ShowInfo()
-        {
-            base.ShowInfo();
-            Console.Write($" | 회사 : {this.company}");
-        }
-        */
         public override string ToString()
         {
             return base.ToString().Replace("생일 : ", "") + $"회사 : {this.company}";
